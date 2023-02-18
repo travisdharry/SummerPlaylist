@@ -11,7 +11,7 @@ Register new Webapp to get credentials
 
 ### Local Setup
 Create GitHub repository
-Clone repository to local machine (I do this using the VSCode Command Palette)
+Clone repository to local machine (I prefer to do this in VSCode using the Command Palette and the "GitHub Pull Requests and Issues" extension)
 Create new conda environment
 `$ conda create -n summerplaylist python=3.10.8`
 `$ conda activate summerplaylist`
