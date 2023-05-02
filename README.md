@@ -37,7 +37,7 @@ websites:
 https://www.musicfestivalwizard.com/festivals/
 personal favorites:
 my spotify account
-Export these to "artists.csv"
+Export these to "artists1.csv"
 
 ### Collect list of candidate songs
 artistsToSongs.ipynb
@@ -46,8 +46,21 @@ Search Spotify for their Spotify IDs
 Find any of their top songs from the last 5 years
 Export these to "songs1.csv"
 
-### Create playlist based on candidate songs
+### Write these to a Spotify "Artist Candidates" playlist
+songsToPlaylist1.ipynb
+Read in list of songs in "songs1.csv"
+Create an empty "Artist Candidates" Spotify playlist
+Add the songs to the playlist
 
+### Listen to the "Artist Candidates"
+Select any artists you like and add one of their songs to a playlist for the current year
+
+### Create playlist based on candidate songs
+collectArtists2.ipynb
+Get a list of all artists who appeared on my previous summer playlists or the current summer candidates
+Find any of their albums from the last 3 years
+Find the song IDs from these albums
+Export these to songs2.csv
 
 ### Listen and delete uninteresting songs
 
