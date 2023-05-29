@@ -69,23 +69,28 @@ def fetchArtistsFromPlaylist(playlistID):
     artistIDs = [item for sublist in nestedList for item in sublist]
     return artistIDs
 
-# GET the top tracks for each artist based on artistID
-def fetchTopSongs(row, maxAge=5):
+# GET the top tracks for each artist based on a list of artistIDs
+def fetchTopSongs(artistIDs, maxAge=5):
     # Only select top songs from the last few years (default 5 years)
     dateMin = datetime((datetime.today() - relativedelta(years=maxAge)).year, 3, 17)
-    try:
-        # Query the spotify API
-        topSongs = spotify.artist_top_tracks(row['artistID'], "US")
-        # Iterate over the tracks to find a list of songURIs;
-        # Limit this to only those songs produced in the last few years; Use only the year (first four digits)
-        # Limit this to only three songs per artist
-        result = [x.uri for x in topSongs if datetime.strptime(x.album.release_date[:4], '%Y')>dateMin][:3]
-    except: 
-        result = [np.nan]
-    finally:
-        # Wait 2 seconds so we do not exceed API limits
-        time.sleep(2)
-        return result
+    # Create empty list
+    songURIs = []
+    for artistID in artistIDs:
+        try:
+            # Query the spotify API
+            topSongs = spotify.artist_top_tracks(artistID, "US")
+            # Iterate over the tracks to find a list of songURIs;
+            # Limit this to only those songs produced in the last few years; Use only the year (first four digits)
+            # Limit this to only three songs per artist
+            result = [x.uri for x in topSongs if datetime.strptime(x.album.release_date[:4], '%Y')>dateMin][:3]
+        except: 
+            result = []
+        finally:
+            # Append songs to list
+            songURIs += result
+            # Wait 2 seconds so we do not exceed API limits
+            time.sleep(2)
+    return songURIs
 
 # GET albums released in recent years based on artistIDs
 def fetchRecentAlbums(artistIDs, maxAge):
