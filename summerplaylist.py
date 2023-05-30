@@ -160,10 +160,32 @@ def fetchTracks(albumIDs):
     trackURIs = trackURIs.unique()
     return trackURIs
 
+# Get tracks and track info based on playlistID
+def fetchTracksFromPlaylist(credentials, playlistID):
+    spotify, userID, user_token = credentials
+    offset = 0
+    limit = 100
+    nestedList = ["empty"]
+    result = pd.DataFrame()
+    # Loop through the offsets until there are no more trac ks
+    while len(nestedList) > 0:
+        # Get all artists in the list from spotify
+        nestedList = [[{
+            "artistName":y.name, "artistID":y.id, "trackName":x.track.name, "release_date":x.track.album.release_date, "songURI":x.track.uri
+            } for y in x.track.artists
+            ] for x in spotify.playlist_items(playlistID, offset=offset, limit=limit).items]
+        # Unnest the list 
+        unnestedList = [item for sublist in nestedList for item in sublist]
+        toAdd = pd.DataFrame(unnestedList)
+        result = pd.concat([result, toAdd], axis=0, ignore_index=True)
+        offset += 100
+    return result
+
 ## POST to Spotify
 
 # Create playlist based on string
-def getPlaylistID(playlistName):
+def getPlaylistID(credentials, playlistName):
+    spotify, userID, user_token = credentials
     with spotify.token_as(user_token):
         # Check if playlist already exists; if not create a new one
         userPlaylists = pd.DataFrame([{'id':x.id, 'name':x.name} for x in spotify.playlists(userID, limit=40).items])
@@ -173,7 +195,7 @@ def getPlaylistID(playlistName):
             playlistID = newPlaylist.id
         # Else just get playlistID
         else:
-            playlistID = userPlaylists.loc[userPlaylists['name']==playlistName, 'id'][0]
+            playlistID = userPlaylists.loc[userPlaylists['name']==playlistName, 'id'].reset_index(drop=True)[0]
     return playlistID
 
 # Add songs to playlist based on songURI
