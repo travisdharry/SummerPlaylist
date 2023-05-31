@@ -40,7 +40,8 @@ def fetchMusicFestivalWizard():
 ## GET from Spotify
 
 # Get artist info based on artist name
-def fetchArtistInfo(artists):
+def fetchArtistInfo(credentials, artists):
+    spotify, userID, user_token = credentials
     try:
         # Search spotify for artists based on name
         possibleArtists, = spotify.search(artists['artistName'], types=['artist'], limit=1)
@@ -61,16 +62,9 @@ def fetchArtistInfo(artists):
         time.sleep(2)
         return result
 
-# GET artistIDs based on playlistID
-def fetchArtistsFromPlaylist(playlistID):
-    # Get all artists in the list from spotify
-    nestedList = [[y.id for y in x.track.artists] for x in spotify.playlist_items(playlistID).items]
-    # Unnest the list 
-    artistIDs = [item for sublist in nestedList for item in sublist]
-    return artistIDs
-
 # GET the top tracks for each artist based on a list of artistIDs
-def fetchTopSongs(artistIDs, maxAge=5):
+def fetchTopSongs(credentials, artistIDs, maxAge=5):
+    spotify, userID, user_token = credentials
     # Only select top songs from the last few years (default 5 years)
     dateMin = datetime((datetime.today() - relativedelta(years=maxAge)).year, 3, 17)
     # Create empty list
@@ -93,7 +87,8 @@ def fetchTopSongs(artistIDs, maxAge=5):
     return songURIs
 
 # GET albums released in recent years based on artistIDs
-def fetchRecentAlbums(artistIDs, maxAge):
+def fetchRecentAlbums(credentials, artistIDs, maxAge):
+    spotify, userID, user_token = credentials
     # Only take albums released in the last few years
     dateMin = datetime((datetime.today() - relativedelta(years=maxAge)).year, 3, 17)
     dateMax = datetime((datetime.today()).year, 3, 17)
@@ -127,7 +122,8 @@ def fetchRecentAlbums(artistIDs, maxAge):
     return albums
 
 # GET all tracks from an album based on albumID
-def fetchTracks(albumIDs):
+def fetchTracks(credentials, albumIDs):
+    spotify, userID, user_token = credentials
     with spotify.token_as(user_token):
         # Cut the df into chunks
         n = 0
@@ -157,8 +153,27 @@ def fetchTracks(albumIDs):
             finally:
                 n += 20
     # Drop duplicates
-    trackURIs = trackURIs.unique()
-    return trackURIs
+    trackCounter = Counter(trackURIs)
+    result = [x[0] for x in trackCounter.items()]
+    return result
+
+# GET artistIDs based on playlistID
+def fetchArtistsFromPlaylist(credentials, playlistID):
+    spotify, userID, user_token = credentials
+    offset = 0
+    limit = 100
+    nestedList = ["empty"]
+    result = []
+    # Loop through the offsets until there are no more trac ks
+    while len(nestedList) > 0:    # Get all artists in the list from spotify
+        nestedList = [[y.id for y in x.track.artists] for x in spotify.playlist_items(playlistID, offset=offset, limit=limit).items]
+        # Unnest the list 
+        unnestedList = [item for sublist in nestedList for item in sublist]
+        # Concatenate new additions
+        result += unnestedList
+        # Increment counter
+        offset += 100
+    return result
 
 # Get tracks and track info based on playlistID
 def fetchTracksFromPlaylist(credentials, playlistID):
@@ -177,7 +192,9 @@ def fetchTracksFromPlaylist(credentials, playlistID):
         # Unnest the list 
         unnestedList = [item for sublist in nestedList for item in sublist]
         toAdd = pd.DataFrame(unnestedList)
+        # Concatenate new additions
         result = pd.concat([result, toAdd], axis=0, ignore_index=True)
+        # Increment counter
         offset += 100
     return result
 
@@ -199,7 +216,8 @@ def getPlaylistID(credentials, playlistName):
     return playlistID
 
 # Add songs to playlist based on songURI
-def addToPlaylist(URIList, playlistID):
+def addToPlaylist(credentials, URIList, playlistID):
+    spotify, userID, user_token = credentials
     with spotify.token_as(user_token):
         # Counter
         n = 0
