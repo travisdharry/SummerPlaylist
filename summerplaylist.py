@@ -93,7 +93,7 @@ def fetchRecentAlbums(credentials, artistIDs, maxAge):
     dateMin = datetime((datetime.today() - relativedelta(years=maxAge)).year, 3, 17)
     dateMax = datetime((datetime.today()).year, 3, 17)
     # Album words to exclude
-    excludeList = 'Deluxe|Extended|Remix'
+    excludeList = 'Deluxe|Extended|Remix|Live at|Live from'
     # Create empty list
     albums = []
     # Loop through list of artists
