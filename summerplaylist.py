@@ -186,9 +186,19 @@ def fetchTracksFromPlaylist(credentials, playlistID):
     while len(nestedList) > 0:
         # Get all artists in the list from spotify
         nestedList = [[{
-            "artistName":y.name, "artistID":y.id, "trackName":x.track.name, "release_date":x.track.album.release_date, "songURI":x.track.uri
-            } for y in x.track.artists
-            ] for x in spotify.playlist_items(playlistID, offset=offset, limit=limit).items]
+                    "artistName":y.name, 
+                    "artistID":y.id, 
+                    "songName":x.track.name, 
+                    "release_date":x.track.album.release_date, 
+                    "songURI":x.track.uri,
+                    "songLocation":x.track.track_number,
+                    "albumLength":x.track.album.total_tracks,
+                    "songDuration":x.track.duration_ms,
+                    "songExplicit":x.track.explicit,
+                    "songPopularity":x.track.popularity,
+                } for y in x.track.artists
+            ] for x in spotify.playlist_items(playlistID, offset=offset, limit=limit).items
+        ]
         # Unnest the list 
         unnestedList = [item for sublist in nestedList for item in sublist]
         toAdd = pd.DataFrame(unnestedList)
