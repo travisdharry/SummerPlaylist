@@ -40,23 +40,15 @@ def fetchMusicFestivalWizard():
 ## GET from Spotify
 
 # Get artist info based on artist name
-def fetchArtistInfo(credentials, artists):
+def findArtistIDs(row, credentials):
     spotify, userID, user_token = credentials
     try:
         # Search spotify for artists based on name
-        possibleArtists, = spotify.search(artists['artistName'], types=['artist'], limit=1)
+        possibleArtists, = spotify.search(row['artistName'], types=['artist'], limit=1)
         # Select the first search result
-        artists['artistID'] = possibleArtists.items[0].id
-        artists['artistPopularity'] = possibleArtists.items[0].popularity
-        artists['artistFollowers'] = possibleArtists.items[0].followers.total
-        artists['artistGenre'] = ", ".join(list(possibleArtists.items[0].genres))
-        result = artists
+        result = possibleArtists.items[0].id
     except:
-        artists['artistID'] = np.nan
-        artists['artistPopularity'] = np.nan
-        artists['artistFollowers'] = np.nan
-        artists['artistGenre'] = np.nan
-        result = artists
+        result = np.nan
     finally:
         # Wait 2 seconds so we do not exceed our API call allowance
         time.sleep(2)
