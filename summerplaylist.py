@@ -62,6 +62,61 @@ def fetchArtistInfo(credentials, artists):
         time.sleep(2)
         return result
 
+# Fetch artist info based on list of artistIDs
+def fetchArtistsInfo(credentials, artistIDs):
+    '''
+    Function to get artist info based on a list of artistIDs
+    Args
+        credentials: spotify instance, userID, and user_token
+        artistIDs: list of artistIDs
+    Returns
+        Dataframe with columns for date, artistID, artistName, artistPopularity, artistFollowers, artistGenre, isLiked
+    '''
+    # Convert credentials
+    spotify, userID, user_token = credentials
+    # Initialize counter and empty df
+    n=0
+    result = pd.DataFrame()
+    # Loop through the list of artistIDs
+    while n<len(artistIDs):
+        # Break into chunks
+        chunk = artistIDs[n:n+50]
+        # Query Spotify and convert response to dataframe
+        try:
+            query = spotify.artists(chunk)
+            df = pd.DataFrame([{
+                    'artistID':x.id, 
+                    'artistName':x.name, 
+                    'artistPopularity':x.popularity,
+                    'artistFollowers':x.followers.total,
+                    'artistGenre':", ".join(list(x.genres))
+                } for x in query])
+        # If there is an error in the chunk, query by individual ID
+        except:
+            # Query Spotify and convert response to dataframe
+            for artistID in chunk:
+                df = pd.DataFrame()
+                try:
+                    x = spotify.artist(artistID)
+                    subchunk = pd.DataFrame({
+                        'artistID':x.id, 
+                        'artistName':x.name, 
+                        'artistPopularity':x.popularity,
+                        'artistFollowers':x.followers.total,
+                        'artistGenre':", ".join(list(x.genres))
+                    })
+                    df = pd.concat([df, subchunk], axis=0)
+                # Skip any that receive errors
+                except:
+                    pass
+        finally:
+            result = pd.concat([result, df], axis=0)
+            time.sleep(2)
+        # Need date, artistID, artistName, artistPopularity, artistFollowers, artistGenre, isLiked
+        # Increment counter
+        n+=50
+    return result
+
 # GET the top tracks for each artist based on a list of artistIDs
 def fetchTopSongs(credentials, artistIDs, maxAge=5):
     spotify, userID, user_token = credentials
