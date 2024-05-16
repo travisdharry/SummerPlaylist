@@ -262,7 +262,7 @@ def getPlaylistID(credentials, playlistName):
     spotify, userID, user_token = credentials
     with spotify.token_as(user_token):
         # Check if playlist already exists; if not create a new one
-        userPlaylists = pd.DataFrame([{'id':x.id, 'name':x.name} for x in spotify.playlists(userID, limit=40).items])
+        userPlaylists = pd.DataFrame([{'id':x.id, 'name':x.name} for x in spotify.playlists(userID, limit=50).items])
         if not (userPlaylists['name'].eq(playlistName)).any():
             # Create a playlist for the user
             newPlaylist = spotify.playlist_create(userID, playlistName, public=False, description='Recent albums from new artists')
